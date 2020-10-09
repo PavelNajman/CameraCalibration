@@ -62,3 +62,5 @@ if __name__ == "__main__":
         print(dist)
         print(rvecs)
         print(tvecs)
+
+        common.DumpResults(mtx, dist)

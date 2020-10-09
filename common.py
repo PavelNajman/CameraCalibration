@@ -1,4 +1,5 @@
 import cv2
+import pickle
 
 WIDTH = 1280
 HEIGHT = 720
@@ -43,3 +44,11 @@ def GetChessboardROI(img, chessboard):
     if max_y >= img.shape[0]: max_y = img.shape[0] - 1
 
     return found, (int(min_x), int(min_y), int(max_x - min_x), int(max_y - min_y))
+
+def DumpResults(mtx, dist):
+    obj_pickle = {}
+    obj_pickle["camera_matrix"] = mtx
+    obj_pickle["distortion_coeffs"] = dist
+    pickle_file = open("camera_calibration.p", "wb")
+    pickle.dump(obj_pickle, pickle_file)
+    pickle_file.close()
