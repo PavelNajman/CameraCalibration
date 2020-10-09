@@ -1,8 +1,7 @@
-import time
-import numpy as np
 import cv2
+import time
 import pathlib
-
+import numpy as np
 
 if __name__ == "__main__":
     WIDTH = 1280
@@ -10,7 +9,7 @@ if __name__ == "__main__":
 
     CHECKERBOARD = (4, 5)
     CRITERIA = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-    SIZE = 0.025
+    SIZE = 0.0245
 
     OBJ_POINTS = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
     OBJ_POINTS[0,:,:2] = np.mgrid[0:CHECKERBOARD[0], 0:CHECKERBOARD[1]].T.reshape(-1, 2) * SIZE
