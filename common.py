@@ -52,3 +52,8 @@ def DumpResults(mtx, dist):
     pickle_file = open("camera_calibration.p", "wb")
     pickle.dump(obj_pickle, pickle_file)
     pickle_file.close()
+
+def LoadCalibration():
+    with open("camera_calibration.p", "rb") as f:
+        obj = pickle.load(f)
+    return obj["camera_matrix"], obj["distortion_coeffs"]

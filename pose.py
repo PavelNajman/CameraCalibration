@@ -1,11 +1,21 @@
 import cv2
 import time
+import pickle
 import picamera
 import numpy as np
 
 import common
 
+def DrawAxis(img, origin, imgpts):
+    cv2.line(img, origin, tuple(imgpts[0].ravel()), (255,0,0), 5)
+    cv2.line(img, origin, tuple(imgpts[1].ravel()), (0,255,0), 5)
+    cv2.line(img, origin, tuple(imgpts[2].ravel()), (0,0,255), 5)
+
 if __name__ == "__main__":
+    camera_matrix, distortion_coeffs = common.LoadCalibration()
+    
+    AXIS = np.float32([[3,0,0], [0,3,0], [0,0,-3]]).reshape(-1,3) * common.SIZE
+
     OBJ_POINTS = np.zeros((1, common.CHESSBOARD[0] * common.CHESSBOARD[1], 3), np.float32)
     OBJ_POINTS[0,:,:2] = np.mgrid[0:common.CHESSBOARD[0], 0:common.CHESSBOARD[1]].T.reshape(-1, 2) * common.SIZE
 
@@ -13,10 +23,7 @@ if __name__ == "__main__":
         camera.resolution = (common.WIDTH, common.HEIGHT)
         camera.framerate = common.FPS
         time.sleep(2)
-        image_points = []
-        object_points = []
-        i = 1
-        while cv2.waitKey(3000) != 27:
+        while cv2.waitKey(int(1000.0 / common.FPS)) != 27:
             # prepare image
             image = np.empty((common.WIDTH * common.HEIGHT * common.CHANNELS,), dtype=np.uint8)
             # capture color image
@@ -36,29 +43,10 @@ if __name__ == "__main__":
                         corner[0][0] += x
                         corner[0][1] += y
                     # refine corners
-                    corners = cv2.cornerSubPix(image, corners, (11, 11),(-1, -1), common.SUBPIX_CRITERIA)
-                    # collect object points
-                    object_points.append(OBJ_POINTS)
-                    # collect image points
-                    image_points.append(corners)
-                    # store image
-                    cv2.imwrite("image_{}.jpg".format(i), image)
-                    # draw corners
-                    image = cv2.drawChessboardCorners(image, common.CHESSBOARD, corners, found)
-                    i += 1
-            # show image
+                    image_points = cv2.cornerSubPix(image, corners, (11, 11),(-1, -1), common.SUBPIX_CRITERIA)
+                    ret, rvec, tvec =  cv2.solvePnP(OBJ_POINTS, image_points, camera_matrix, distortion_coeffs)
+                    if ret:
+                        print(rvec.T, tvec.T)
+                        axis_pts, _ = cv2.projectPoints(AXIS, rvec, tvec, camera_matrix, distortion_coeffs)
+                        DrawAxis(image, tuple(image_points[0].ravel()), axis_pts)
             cv2.imshow("IMAGE", image)
-        cv2.destroyAllWindows()
-        camera_matrix_guess = np.array([[1250.0, 0, (common.WIDTH-1)/2.0], [0, 1250.0, (common.HEIGHT-1)/2.0],
-            [0, 0, 1.0]])
-        ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(object_points, image_points, image.shape[::-1], camera_matrix_guess, None, flags = common.CALIBRATE_CAMERA_FLAGS)
-
-        print("Error: ", ret)
-        print("Camera matrix: ")
-        print(mtx)
-        print("Distortion coeffs: ")
-        print(dist)
-        print(rvecs)
-        print(tvecs)
-
-        common.DumpResults(mtx, dist)
