@@ -6,7 +6,7 @@ import numpy as np
 
 import common
 
-def ParseCommandLineArguments():
+def parse_command_line_arguments():
     parser = argparse.ArgumentParser(description='Detects chessboard pattern and calibrates the camera.')
     parser.add_argument('-c', '--chessboard-columns', default=5, type=int)
     parser.add_argument('-r', '--chessboard-rows', default=4, type=int)
@@ -14,16 +14,12 @@ def ParseCommandLineArguments():
     return parser.parse_args(sys.argv[1:])
 
 def main():
-    args = ParseCommandLineArguments()
-
-    OBJ_POINTS = np.zeros((1, args.chessboard_rows * args.chessboard_columns, 3), np.float32)
-    OBJ_POINTS[0,:,:2] = np.mgrid[0:args.chessboard_rows, 0:args.chessboard_columns].T.reshape(-1, 2) * args.chessboard_field_size
+    args = parse_command_line_arguments()
 
     CHESSBOARD = (args.chessboard_rows, args.chessboard_columns)
 
     shape = None
     image_points = []
-    object_points = []
     for f in pathlib.Path.cwd().glob("*.jpg"):
         # read image
         image = cv2.imread(str(f), cv2.IMREAD_GRAYSCALE)
@@ -32,8 +28,6 @@ def main():
         if found:
             # refine corners
             corners = cv2.cornerSubPix(image, corners, (11, 11),(-1, -1), common.SUBPIX_CRITERIA)
-            # collect object points
-            object_points.append(OBJ_POINTS)
             # collect image points
             image_points.append(corners)
             # ensure that all processed images have the same shape
@@ -42,9 +36,12 @@ def main():
             elif shape != image.shape:
                 print("ERROR: All images should have the same size")
                 return -1
+    
     height, width = shape
+    OBJ_POINTS = np.zeros((1, args.chessboard_rows * args.chessboard_columns, 3), np.float32)
+    OBJ_POINTS[0,:,:2] = np.mgrid[0:args.chessboard_rows, 0:args.chessboard_columns].T.reshape(-1, 2) * args.chessboard_field_size
     camera_matrix_guess = np.array([[1250.0, 0, (width-1)/2.0], [0, 1250.0, (height-1)/2.0], [0, 0, 1.0]])
-    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(object_points, image_points, image.shape[::-1], camera_matrix_guess, None, flags = common.CALIBRATE_CAMERA_FLAGS)
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera([OBJ_POINTS for _ in image_points], image_points, (width, height), camera_matrix_guess, None, flags = common.CALIBRATE_CAMERA_FLAGS)
 
     print("Error: ", ret)
     print("Camera matrix: ")
