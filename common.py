@@ -19,7 +19,7 @@ def FindChessboardCornersInScaledImage(img, chessboard, scale):
     width = int(img.shape[1] * scale)
     height = int(img.shape[0] * scale)
     resized = cv2.resize(img, (width, height), interpolation = cv2.INTER_CUBIC)
-    return cv2.findChessboardCorners(resized, chessboard, FIND_CHESSBOARD_FLAGS)
+    return cv2.findChessboardCorners(resized, chessboard, flags = FIND_CHESSBOARD_FLAGS)
 
 def GetChessboardROI(img, chessboard, downscale_factor):
     MARGIN = 0.50

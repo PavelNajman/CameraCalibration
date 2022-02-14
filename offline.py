@@ -24,7 +24,7 @@ def main():
         # read image
         image = cv2.imread(str(f), cv2.IMREAD_GRAYSCALE)
         # find chessboard corners
-        found, corners = cv2.findChessboardCorners(image, CHESSBOARD, common.FIND_CHESSBOARD_FLAGS)
+        found, corners = cv2.findChessboardCorners(image, CHESSBOARD, flags = common.FIND_CHESSBOARD_FLAGS)
         if found:
             # refine corners
             corners = cv2.cornerSubPix(image, corners, (11, 11),(-1, -1), common.SUBPIX_CRITERIA)
@@ -36,7 +36,7 @@ def main():
             elif shape != image.shape:
                 print("ERROR: All images should have the same size")
                 return -1
-    
+
     height, width = shape
     OBJ_POINTS = np.zeros((1, args.chessboard_rows * args.chessboard_columns, 3), np.float32)
     OBJ_POINTS[0,:,:2] = np.mgrid[0:args.chessboard_rows, 0:args.chessboard_columns].T.reshape(-1, 2) * args.chessboard_field_size

@@ -94,7 +94,7 @@ if __name__ == "__main__":
                 if found:
                     (x, y, w, h) = roi
                     # find chessboard corners
-                    found, corners = cv2.findChessboardCorners(image[y:y + h, x:x + w], CHESSBOARD, common.FIND_CHESSBOARD_FLAGS)
+                    found, corners = cv2.findChessboardCorners(image[y:y + h, x:x + w], CHESSBOARD, flags = common.FIND_CHESSBOARD_FLAGS)
                     if found:
                         # offset corners
                         for corner in corners:
