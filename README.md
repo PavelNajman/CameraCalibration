@@ -1,2 +1,2 @@
-# CameraCalibrationRPi
-Raspberry Pi camera calibration using OpenCV.
+# CameraCalibration
+NVIDIA Jetson Nano camera calibration using OpenCV.
